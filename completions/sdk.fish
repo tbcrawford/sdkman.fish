@@ -5,7 +5,7 @@
 # Test if there is no command
 function __fish_sdkman_no_command
     set cmd (commandline -opc)
-    if count $cmd; and test (count $cmd) -eq 1
+    if test (count $cmd) -eq 1
         return 0
     end
     return 1
@@ -14,7 +14,7 @@ end
 # Test if the main command matches one of the parameters
 function __fish_sdkman_using_command
     set cmd (commandline -opc)
-    if count $cmd; and test (count $cmd) -eq 2; and contains $cmd[2] $argv
+    if test (count $cmd) -eq 2; and contains $cmd[2] $argv
         return 0
     end
     return 1
@@ -23,7 +23,7 @@ end
 # Test if the main command matches one of the parameters and the candidate is specified
 function __fish_sdkman_specifying_candidate
     set cmd (commandline -opc)
-    if count $cmd; and test (count $cmd) -eq 3; and contains $cmd[2] $argv
+    if test (count $cmd) -eq 3; and contains $cmd[2] $argv
         return 0
     end
     return 1
@@ -32,7 +32,7 @@ end
 # Test if the command has enough parameters
 function __fish_sdkman_command_has_enough_parameters
     set cmd (commandline -opc)
-    if count $cmd; and test (count $cmd) -ge (math $argv[1] + 2); and contains $cmd[2] $argv[2..-1]
+    if test (count $cmd) -ge (math $argv[1] + 2); and contains $cmd[2] $argv[2..-1]
         return 0
     end
     return 1
@@ -44,25 +44,21 @@ end
 
 # Fetch the list of candidates
 function __fish_sdkman_candidates
-    cat "$SDKMAN_DIR/var/candidates" | string replace -a -r ',' '\n'
+    string split ',' < "$SDKMAN_DIR/var/candidates"
 end
 
 # Fetch the list of versions for the given candidate
 function __fish_sdkman_candidate_versions
     set cmd (commandline -opc)
-    if count $cmd; and test (count $cmd) -eq 3
+    if test (count $cmd) -eq 3
         set candidate $cmd[3]
         set sdkman_api "$SDKMAN_CANDIDATES_API/candidates/$candidate/$SDKMAN_PLATFORM/versions/all"
-        set versions (curl --silent $sdkman_api | string split ',')
-        for v in $versions
-            echo $v
-        end
+        curl --silent $sdkman_api | string split ','
     end
 end
 
 # Fetch the list of installed versions for the given candidate
 function __fish_sdkman_candidates_with_versions
-    set regexpHome (string replace -a '/' '\\/' "$HOME/")
     find "$SDKMAN_DIR/candidates/" -mindepth 2 -maxdepth 2 -name '*current' \
         | awk -F / '{ print $(NF-1) }' \
         | sort -u
@@ -72,7 +68,7 @@ end
 function __fish_sdkman_installed_versions
     set cmd (commandline -opc)
     if test -d "$SDKMAN_DIR/candidates/$cmd[3]/current"
-        ls -v1 "$SDKMAN_DIR/candidates/$cmd[3]" | grep -v current
+        ls -1 "$SDKMAN_DIR/candidates/$cmd[3]" | grep -v 'current'
     end
 end
 
@@ -95,7 +91,6 @@ complete -c sdk -f -n __fish_sdkman_no_command -a help -d 'Display help message'
 complete -c sdk -f -n __fish_sdkman_no_command -a offline -d 'Set offline status'
 complete -c sdk -f -n __fish_sdkman_no_command -a selfupdate -d 'Update sdk'
 complete -c sdk -f -n __fish_sdkman_no_command -a update -d 'Reload the candidate list'
-
 
 # install
 # Suggest candidates as the second argument

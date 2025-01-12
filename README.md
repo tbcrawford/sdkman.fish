@@ -7,7 +7,7 @@
 With [Fisher](https://github.com/jorgebucaran/fisher)
 
 ```shell
-fisher install tcrawford-figure/sdkman.fish
+fisher install tbcrawford/sdkman.fish
 ```
 
 ## Usage
